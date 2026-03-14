@@ -15,6 +15,10 @@ import AdminLogin from "@/pages/admin/Login";
 import Dashboard from "@/pages/admin/Dashboard";
 import ToolsManager from "@/pages/admin/ToolsManager";
 import AdsManager from "@/pages/admin/AdsManager";
+import Analytics from "@/pages/admin/Analytics";
+import FeedbackManager from "@/pages/admin/FeedbackManager";
+import Scanner from "@/pages/admin/Scanner";
+import Settings from "@/pages/admin/Settings";
 
 import NotFound from "@/pages/not-found";
 import { Layout } from "./components/Layout";
@@ -44,10 +48,13 @@ function Router() {
       <Route path="/admin" component={AdminLogin} />
       <Route path="/admin/dashboard" component={Dashboard} />
       <Route path="/admin/tools" component={ToolsManager} />
+      <Route path="/admin/tools/:id/edit" component={ToolsManager} />
+      <Route path="/admin/tools/new" component={ToolsManager} />
       <Route path="/admin/ads" component={AdsManager} />
-      {/* Missing admin routes handled via Dashboard redirect or placeholders in a real app, mapping them back to Dash for completeness here */}
-      <Route path="/admin/analytics" component={Dashboard} />
-      <Route path="/admin/settings" component={Dashboard} />
+      <Route path="/admin/analytics" component={Analytics} />
+      <Route path="/admin/feedback" component={FeedbackManager} />
+      <Route path="/admin/scanner" component={Scanner} />
+      <Route path="/admin/settings" component={Settings} />
       
       {/* Fallback */}
       <Route component={NotFound} />
