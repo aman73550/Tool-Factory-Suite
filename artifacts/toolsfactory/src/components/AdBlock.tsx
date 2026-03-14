@@ -1,39 +1,77 @@
 import React, { useEffect, useState } from 'react';
-import { useGetAdZones } from '@workspace/api-client-react';
 
 interface AdBlockProps {
   zone: string;
   className?: string;
 }
 
+const AD_ZONE_LABELS: Record<string, string> = {
+  HEADER_AD: 'Header Advertisement',
+  TOOL_TOP_AD: 'Tool Top Advertisement',
+  TOOL_MIDDLE_AD: 'Tool Middle Advertisement',
+  RESULT_SECTION_AD: 'Result Advertisement',
+  SIDEBAR_TOP_AD: 'Sidebar Advertisement',
+  SIDEBAR_BOTTOM_AD: 'Sidebar Bottom Advertisement',
+  FOOTER_AD: 'Footer Advertisement',
+  STICKY_BOTTOM_AD: 'Sticky Bottom Advertisement',
+  FLOATING_AD: 'Floating Advertisement',
+};
+
+type ZoneConfig = { zone: string; enabled: boolean; code: string };
+let cachedZones: ZoneConfig[] | null = null;
+let fetchPromise: Promise<ZoneConfig[]> | null = null;
+
+function fetchZones(): Promise<ZoneConfig[]> {
+  if (cachedZones) return Promise.resolve(cachedZones);
+  if (fetchPromise) return fetchPromise;
+  fetchPromise = fetch('/api/ads')
+    .then(r => r.json())
+    .then(data => {
+      cachedZones = data.zones || [];
+      return cachedZones!;
+    })
+    .catch(() => {
+      cachedZones = [];
+      return [];
+    });
+  return fetchPromise;
+}
+
 export function AdBlock({ zone, className = '' }: AdBlockProps) {
-  const { data: adData, isLoading } = useGetAdZones();
+  const [zoneConfig, setZoneConfig] = useState<ZoneConfig | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Lazy load simulation
-    const timer = setTimeout(() => setIsVisible(true), 500);
+    const timer = setTimeout(async () => {
+      const zones = await fetchZones();
+      const found = zones.find(z => z.zone === zone);
+      setZoneConfig(found || { zone, enabled: true, code: '' });
+      setIsVisible(true);
+    }, 600);
     return () => clearTimeout(timer);
-  }, []);
+  }, [zone]);
 
-  if (isLoading || !isVisible) return null;
+  if (!isVisible || !zoneConfig || !zoneConfig.enabled) return null;
 
-  const zoneConfig = adData?.zones?.find(z => z.zone === zone);
+  const label = AD_ZONE_LABELS[zone] || zone;
 
-  if (!zoneConfig || !zoneConfig.enabled) {
-    return null;
-  }
+  const heightClass = zone === 'STICKY_BOTTOM_AD' ? 'min-h-[60px]'
+    : zone === 'FLOATING_AD' ? 'min-h-[200px]'
+    : zone.includes('SIDEBAR') ? 'min-h-[250px]'
+    : zone === 'HEADER_AD' || zone === 'FOOTER_AD' ? 'min-h-[90px]'
+    : 'min-h-[100px]';
 
-  // If there's real ad code, we would render it via dangerouslySetInnerHTML
-  // For safety and platform rules, we render a highly visible placeholder
   return (
-    <div className={`w-full overflow-hidden flex items-center justify-center bg-accent/10 border-2 border-dashed border-accent/30 rounded-xl min-h-[100px] ${className}`}>
+    <div className={`w-full overflow-hidden flex items-center justify-center bg-primary/5 border border-dashed border-primary/20 rounded-xl ${heightClass} ${className}`}>
       <div className="text-center p-4">
-        <span className="text-xs font-bold uppercase tracking-wider text-accent/60 block mb-1">Advertisement</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 block mb-2">Advertisement</span>
         {zoneConfig.code ? (
           <div dangerouslySetInnerHTML={{ __html: zoneConfig.code }} />
         ) : (
-          <span className="text-sm font-medium text-accent/80">{zone} Placeholder</span>
+          <div>
+            <span className="text-xs font-medium text-muted-foreground/50">{label}</span>
+            <p className="text-[10px] text-muted-foreground/40 mt-1">728×90 · Configure in Admin → Ads Manager</p>
+          </div>
         )}
       </div>
     </div>
