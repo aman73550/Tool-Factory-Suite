@@ -1,21 +1,27 @@
 import React from 'react';
 import { Link, useLocation } from 'wouter';
 import { AdBlock } from './AdBlock';
+import { ScriptInjector } from './ScriptInjector';
 import { Wrench, Menu, X, Search, Moon, Sun } from 'lucide-react';
 import { Button } from './ui/button';
+import { useSiteConfig } from '@/lib/siteConfig';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const [isDark, setIsDark] = React.useState(false);
+  const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains('dark'));
+  const { config } = useSiteConfig();
 
   React.useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    if (isDark) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
   }, [isDark]);
+
+  React.useEffect(() => {
+    if (config.theme === 'dark') {
+      setIsDark(true);
+    }
+  }, [config.theme]);
 
   const navLinks = [
     { label: 'Home', href: '/' },
@@ -24,21 +30,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { label: 'Contact', href: '/contact' },
   ];
 
+  const siteName = config.siteName || 'ToolsFactory';
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300">
+      <ScriptInjector />
+
       <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="bg-primary text-primary-foreground p-1.5 rounded-lg group-hover:rotate-12 transition-transform">
               <Wrench size={20} />
             </div>
-            <span className="font-display font-bold text-xl tracking-tight">ToolsFactory</span>
+            <span className="font-display font-bold text-xl tracking-tight">{siteName}</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
             {navLinks.map(link => (
-              <Link 
-                key={link.href} 
+              <Link
+                key={link.href}
                 href={link.href}
                 className={`text-sm font-medium transition-colors hover:text-primary ${location === link.href ? 'text-primary' : 'text-muted-foreground'}`}
               >
@@ -63,8 +73,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t bg-background px-4 py-4 space-y-4">
             {navLinks.map(link => (
-              <Link 
-                key={link.href} 
+              <Link
+                key={link.href}
                 href={link.href}
                 className="block text-base font-medium py-2 text-foreground"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -98,10 +108,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="bg-primary text-primary-foreground p-1.5 rounded-lg">
                 <Wrench size={20} />
               </div>
-              <span className="font-display font-bold text-xl">ToolsFactory</span>
+              <span className="font-display font-bold text-xl">{siteName}</span>
             </Link>
             <p className="text-muted-foreground text-sm max-w-sm mb-6">
-              A comprehensive suite of free online tools for developers, creators, and professionals. Fast, secure, and easy to use.
+              {config.siteTagline || 'A comprehensive suite of free online tools for developers, creators, and professionals.'}
             </p>
           </div>
           <div>
@@ -123,11 +133,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <div className="container mx-auto px-4 mt-12 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} ToolsFactory. All rights reserved.
+          {config.footerText || `© ${new Date().getFullYear()} ${siteName}. All rights reserved.`}
         </div>
       </footer>
 
-      {/* Floating Elements */}
       <AdBlock zone="STICKY_BOTTOM_AD" className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur shadow-2xl border-t !min-h-[60px]" />
       <div className="fixed bottom-24 right-4 z-40">
         <AdBlock zone="FLOATING_AD" className="w-[200px] h-[200px] rounded-xl shadow-2xl bg-card" />

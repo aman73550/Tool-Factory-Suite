@@ -4,7 +4,7 @@ import { useGetAdminMe, useAdminLogout } from '@workspace/api-client-react';
 import {
   LayoutDashboard, Wrench, Plus, Settings,
   BarChart, MessageSquare, ShieldAlert, LogOut, FileText,
-  TrendingUp, Search, Sparkles
+  TrendingUp, Search, Sparkles, Code
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
@@ -52,6 +52,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
       items: [
         { label: 'Ads Manager', icon: FileText, href: '/admin/ads' },
         { label: 'SEO Manager', icon: Search, href: '/admin/seo' },
+        { label: 'Script Manager', icon: Code, href: '/admin/scripts' },
       ],
     },
     {
