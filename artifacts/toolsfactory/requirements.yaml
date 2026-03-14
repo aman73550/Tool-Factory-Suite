@@ -1,0 +1,19 @@
+packages:
+  "framer-motion": "For page transitions, smooth entries, and interactive animations"
+  "recharts": "For rendering beautiful admin analytics charts"
+  "qrcode.react": "For rendering client-side QR codes easily"
+  "browser-image-compression": "For client-side image compression tool logic"
+  "react-helmet": "For dynamic SEO metadata insertion per page"
+  "date-fns": "For elegant date formatting in admin and feedback sections"
+
+images:
+  - path: "artifacts/toolsfactory/public/images/hero-mesh.png"
+    description: "A premium, dark abstract gradient mesh background using vibrant indigo, deep purple, and subtle teal tones. Modern SaaS aesthetic, high resolution."
+    aspect_ratio: "16:9"
+  - path: "artifacts/toolsfactory/public/images/admin-bg.png"
+    description: "Very dark, subtle geometric grid pattern on a deep slate background. Elegant and professional for an admin dashboard login screen."
+    aspect_ratio: "16:9"
+
+notes:
+  - Assuming /api/admin/me returns 401 when not authenticated to trigger redirects.
+  - The API client hooks are imported directly from @workspace/api-client-react as per standard setup.

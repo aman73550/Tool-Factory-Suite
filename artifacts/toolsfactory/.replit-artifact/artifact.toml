@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "AI Tools Factory Platform"
+version = "1.0.0"
+id = "artifacts/toolsfactory"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 18903
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/toolsfactory run dev"
+
+[services.env]
+PORT = "18903"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/toolsfactory", "run", "build"]
+publicDir = "artifacts/toolsfactory/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"

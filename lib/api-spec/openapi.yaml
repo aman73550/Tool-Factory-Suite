@@ -1,22 +1,30 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Tools Factory Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: tools
+    description: Tools management
+  - name: feedback
+    description: User feedback and ratings
+  - name: analytics
+    description: Analytics tracking
+  - name: admin
+    description: Admin panel operations
+  - name: ads
+    description: Ad zone management
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +32,327 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /tools:
+    get:
+      operationId: listTools
+      tags: [tools]
+      summary: List all tools
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: number
+        - name: offset
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of tools
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToolListResponse"
+
+  /tools/{slug}:
+    get:
+      operationId: getTool
+      tags: [tools]
+      summary: Get tool by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tool details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tool"
+        "404":
+          description: Tool not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tools/{slug}/view:
+    post:
+      operationId: recordToolView
+      tags: [analytics]
+      summary: Record a tool page view
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: View recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /feedback:
+    get:
+      operationId: listFeedback
+      tags: [feedback]
+      summary: List all feedback (admin)
+      parameters:
+        - name: toolSlug
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: number
+        - name: offset
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Feedback list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackListResponse"
+    post:
+      operationId: submitFeedback
+      tags: [feedback]
+      summary: Submit tool rating and feedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFeedbackRequest"
+      responses:
+        "201":
+          description: Feedback submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Feedback"
+
+  /feedback/{id}:
+    delete:
+      operationId: deleteFeedback
+      tags: [feedback]
+      summary: Delete feedback (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    patch:
+      operationId: updateFeedback
+      tags: [feedback]
+      summary: Update feedback status (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFeedbackRequest"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Feedback"
+
+  /analytics:
+    get:
+      operationId: getAnalytics
+      tags: [analytics]
+      summary: Get analytics summary
+      responses:
+        "200":
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsSummary"
+
+  /admin/tools:
+    post:
+      operationId: createTool
+      tags: [admin]
+      summary: Create a new tool
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateToolRequest"
+      responses:
+        "201":
+          description: Tool created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tool"
+
+  /admin/tools/{id}:
+    put:
+      operationId: updateTool
+      tags: [admin]
+      summary: Update a tool
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateToolRequest"
+      responses:
+        "200":
+          description: Tool updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tool"
+    delete:
+      operationId: deleteTool
+      tags: [admin]
+      summary: Delete a tool
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /admin/ads:
+    get:
+      operationId: getAdZones
+      tags: [ads]
+      summary: Get all ad zones
+      responses:
+        "200":
+          description: Ad zones
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdZoneListResponse"
+    put:
+      operationId: updateAdZones
+      tags: [ads]
+      summary: Update ad zones configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdZonesRequest"
+      responses:
+        "200":
+          description: Ad zones updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdZoneListResponse"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminLoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/logout:
+    post:
+      operationId: adminLogout
+      tags: [admin]
+      summary: Admin logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /admin/me:
+    get:
+      operationId: getAdminMe
+      tags: [admin]
+      summary: Get current admin session
+      responses:
+        "200":
+          description: Admin info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminInfo"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +360,294 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required: [error]
+
+    Tool:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        slug:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        logicFunction:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        faqData:
+          type: array
+          items:
+            $ref: "#/components/schemas/FaqItem"
+        status:
+          type: string
+          enum: [active, disabled]
+        viewCount:
+          type: number
+        averageRating:
+          type: number
+        ratingCount:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, name, slug, category, description, logicFunction, status, viewCount, averageRating, ratingCount, createdAt, updatedAt]
+
+    FaqItem:
+      type: object
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
+      required: [question, answer]
+
+    ToolListResponse:
+      type: object
+      properties:
+        tools:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tool"
+        total:
+          type: number
+        categories:
+          type: array
+          items:
+            type: string
+      required: [tools, total, categories]
+
+    CreateToolRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        logicFunction:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        faqData:
+          type: array
+          items:
+            $ref: "#/components/schemas/FaqItem"
+      required: [name, slug, category, description, logicFunction]
+
+    UpdateToolRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        logicFunction:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        faqData:
+          type: array
+          items:
+            $ref: "#/components/schemas/FaqItem"
+        status:
+          type: string
+          enum: [active, disabled]
+
+    Feedback:
+      type: object
+      properties:
+        id:
+          type: number
+        toolSlug:
+          type: string
+        toolName:
+          type: string
+        rating:
+          type: number
+        comment:
+          type: string
+        status:
+          type: string
+          enum: [pending, resolved]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, toolSlug, toolName, rating, status, createdAt]
+
+    CreateFeedbackRequest:
+      type: object
+      properties:
+        toolSlug:
+          type: string
+        rating:
+          type: number
+        comment:
+          type: string
+      required: [toolSlug, rating]
+
+    UpdateFeedbackRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, resolved]
+
+    FeedbackListResponse:
+      type: object
+      properties:
+        feedback:
+          type: array
+          items:
+            $ref: "#/components/schemas/Feedback"
+        total:
+          type: number
+      required: [feedback, total]
+
+    AnalyticsSummary:
+      type: object
+      properties:
+        totalTools:
+          type: number
+        totalViews:
+          type: number
+        totalRatings:
+          type: number
+        topTools:
+          type: array
+          items:
+            $ref: "#/components/schemas/ToolStat"
+        dailyViews:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyStat"
+        categoryStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryStat"
+      required: [totalTools, totalViews, totalRatings, topTools, dailyViews, categoryStats]
+
+    ToolStat:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        views:
+          type: number
+        rating:
+          type: number
+      required: [slug, name, views, rating]
+
+    DailyStat:
+      type: object
+      properties:
+        date:
+          type: string
+        views:
+          type: number
+      required: [date, views]
+
+    CategoryStat:
+      type: object
+      properties:
+        category:
+          type: string
+        count:
+          type: number
+        views:
+          type: number
+      required: [category, count, views]
+
+    AdZone:
+      type: object
+      properties:
+        zone:
+          type: string
+        enabled:
+          type: boolean
+        code:
+          type: string
+      required: [zone, enabled]
+
+    AdZoneListResponse:
+      type: object
+      properties:
+        zones:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdZone"
+      required: [zones]
+
+    UpdateAdZonesRequest:
+      type: object
+      properties:
+        zones:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdZone"
+      required: [zones]
+
+    AdminLoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    AdminLoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success]
+
+    AdminInfo:
+      type: object
+      properties:
+        email:
+          type: string
+        isAdmin:
+          type: boolean
+      required: [email, isAdmin]
